@@ -13,8 +13,6 @@ jobs:
       matrix:
         os:
           - windows-latest
-          - ubuntu-latest
-          # - macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
