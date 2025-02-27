@@ -25,30 +25,24 @@ jobs:
           java-version: '17'
 
       - name: Install Chrome on Linux
-        if: runner.os == 'Linux'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget curl unzip
+          sudo apt-get install -y wget curl
           wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
+          echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
-          wget -q "https://chromedriver.storage.googleapis.com/$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION)/chromedriver_linux64.zip"
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/bin/chromedriver
-          sudo chmod +x /usr/bin/chromedriver
           google-chrome --version
           chromedriver --version
 
       - name: Install Chrome on Windows
-        if: runner.os == 'Windows'
+        if: matrix.os == 'windows-latest'
         run: |
           choco install googlechrome chromedriver
-          echo "Chrome version:"
-          google-chrome --version
-          echo "ChromeDriver version:"
-          chromedriver --version
+          echo "Checking Chrome version..."
+          chrome --version || echo "Chrome not found"
+          where chromedriver
 
       - name: Build and Run Tests
         run: mvn clean test

@@ -199,11 +199,13 @@
 
 
 package core;
+
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import io.qameta.allure.*;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -212,7 +214,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.testng.ITestResult;
 import org.testng.annotations.*;
 import pages.LoginPage;
-
+import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 
 public class BaseTest {
@@ -228,19 +231,15 @@ public class BaseTest {
             String os = System.getProperty("os.name").toLowerCase();
             WebDriverManager.chromedriver().setup();
 
-            if (os.contains("linux")) {
-                System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
-            }
-
             driver = new ChromeDriver(getOptions(os));
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             driver.manage().window().maximize();
 
-            // Tạo test mới trong Extent Reports
             test = extent.createTest("Test Case - " + this.getClass().getSimpleName());
             test.log(Status.INFO, "Browser setup completed");
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
+            throw new RuntimeException("WebDriver initialization failed");
         }
     }
 
@@ -291,6 +290,14 @@ public class BaseTest {
     }
 
     public String takeScreenshotPath() {
-        return ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
+        try {
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            String path = "screenshots/" + System.currentTimeMillis() + ".png";
+            FileUtils.copyFile(screenshot, new File(path));
+            return path;
+        } catch (IOException e) {
+            System.out.println("Screenshot error: " + e.getMessage());
+            return "";
+        }
     }
 }
