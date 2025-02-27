@@ -1,4 +1,5 @@
 name: Run Selenium Tests
+
 on:
   push:
     branches:
@@ -6,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -13,6 +15,8 @@ jobs:
       matrix:
         os:
           - windows-latest
+          - ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,6 +26,17 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '23'
+
+      - name: Install Chrome and ChromeDriver (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt update
+          sudo apt install -y google-chrome-stable
+          wget -q -O chromedriver.zip https://chromedriver.storage.googleapis.com/$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip
+          unzip chromedriver.zip
+          sudo mv chromedriver /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+
       - name: Build and Run Tests
         run: |
           mvn clean test -X

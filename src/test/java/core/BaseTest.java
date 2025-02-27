@@ -26,7 +26,13 @@ public class BaseTest {
     @Step("Setup Chrome browser")
     public void setup() {
         try {
-            WebDriverManager.chromedriver().setup();
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("linux")) {
+                WebDriverManager.chromedriver().setup();
+                System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
+            } else {
+                WebDriverManager.chromedriver().setup();
+            }
             driver = new ChromeDriver(getOptions());
             driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
             driver.manage().window().maximize();
